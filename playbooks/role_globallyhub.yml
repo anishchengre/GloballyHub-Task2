@@ -1,0 +1,6 @@
+---
+- name: Install Nginx
+  hosts: all
+  roles:
+    - Globallyhub-Task2
+ 

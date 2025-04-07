@@ -1,0 +1,161 @@
+---
+- name: Force-set Python interpreter before bootstrap
+  set_fact:
+    ansible_python_interpreter: /usr/bin/python3.12
+
+- name: Bootstrap Python environment (raw commands)
+  raw: |
+    sudo apt-get update && 
+    sudo apt-get install -y python3 python3-apt 
+  args:
+    executable: /bin/bash
+  register: bootstrap
+  changed_when: bootstrap.stdout != ''
+
+
+- name: Pause to let system register changes
+  pause:
+    seconds: 3
+
+
+- name: Re-gather facts with new Python environment
+  setup:
+
+- name: Update all packages (using command module)
+  command: sudo apt-get dist-upgrade -y
+  register: upgrade
+  changed_when: upgrade.stdout != ''
+
+- name: Install Nginx (using command module)
+  command: sudo apt-get install -y nginx
+  when: ansible_facts.python.version.major == 3
+
+- name: Ensure Nginx is running
+  service:
+    name: nginx
+    state: started
+    enabled: yes
+  become: true
+
+
+
+- name: Creating Website directories in desired path
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: anishchengre
+    group: anishchengre
+    mode: '0755'
+  loop:
+    - /var/www/task1  
+    - /var/www/task2
+  become: true  # Add this to run with sudo
+
+- name: Create page1 content
+  copy:
+    content: "<h1>Page 1 Content</h1>"
+    dest: /var/www/task1/index.html
+    owner: anishchengre
+    group: anishchengre
+    mode: '0644'      
+  become: true  # Add this to run with sudo
+
+
+- name: Create page2 content
+  copy:
+    content: "<h1>Page 2 Content</h1>"
+    dest: /var/www/task2/index.html
+    owner: anishchengre
+    group: anishchengre
+    mode: '0644'
+  become: true  # Add this to run with sudo
+
+
+
+- name: Configure nginx 
+  template:
+    src: nginx_config.j2
+    dest: /etc/nginx/sites-available/GloballyHub
+  notify: Reload Nginx  
+  become: true  # This was missing
+
+
+- name: Enable nginx site
+  file:
+    src: /etc/nginx/sites-available/GloballyHub
+    dest: /etc/nginx/sites-enabled/GloballyHub
+    state: link
+  notify: Reload Nginx    
+  become: true  # This was missing
+
+
+- name: Configure UFW
+  ufw:
+    rule: allow
+    port: "{{ item }}"
+  loop:
+    - "22"
+    - "80"  
+    - "443"  
+
+  notify: Reload UFW  
+  become: true  # This was missing
+
+
+- name: Enable UFW
+  ufw:
+    state: enabled
+    default: deny
+  become: true  # This was missing
+
+
+
+# - name: Install Python distutils (critical dependency)
+#   raw: |
+#     sudo apt-get update -y && \
+#     sudo apt-get install -y python3-distutils python3-venv
+#   args:
+#     executable: /bin/bash
+#   become: yes
+
+# # Install CFFI and Certbot using raw (bypass apt module)
+
+# - name: Install critical dependencies (raw)
+#   raw: |
+#     sudo apt-get update -y && \
+#     sudo apt-get install -y python3-cffi libffi-dev certbot python3-certbot-nginx
+#   args:
+#     executable: /bin/bash
+#   become: yes
+#   register: cffi_install
+#   changed_when: cffi_install.stdout != ''
+
+
+
+
+
+
+# Run Certbot
+- name: Run Certbot (raw command)
+  raw: |
+    certbot --nginx --non-interactive --agree-tos --redirect -m {{ certbot_email }} -d {{ certbot_domain }}
+  args:
+    executable: /bin/bash
+  become: yes
+  register: certbot_result
+  retries: 3
+  delay: 10
+  ignore_errors: yes
+
+
+
+
+# Simplified debug task
+- name: Show Certbot debug info if failed
+  debug:
+    msg: |
+      Certbot failed. Diagnostic info:
+      - Python version: {{ ansible_facts.python.version }}
+      - Certbot output: {{ certbot_result.stdout | default('No output') }}
+  when: certbot_result is failed
+

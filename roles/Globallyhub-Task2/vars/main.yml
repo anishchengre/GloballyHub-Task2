@@ -1,0 +1,11 @@
+#SPDX-License-Identifier: MIT-0
+---
+# vars file for Globallyhub-Task2
+
+certbot_domain: globallyhub.tezhni.com
+certbot_email: anishgharti.chhetry@gmail.com  
+ansible_user_id: anishchengre
+
+
+
+

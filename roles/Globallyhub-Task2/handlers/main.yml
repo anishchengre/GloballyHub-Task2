@@ -1,0 +1,13 @@
+---
+# handlers/main.yml
+- name: Reload Nginx
+  service:
+    name: nginx
+    state: reloaded
+  become: true
+
+- name: Reload ufw
+  service:
+    name: ufw
+    state: reloaded
+  become: true 

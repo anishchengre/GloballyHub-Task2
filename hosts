@@ -1,0 +1,4 @@
+[servers]
+5.189.163.205 ansible_user=anishchengre ansible_python_interpreter=/usr/bin/python3.12
+  
+       
