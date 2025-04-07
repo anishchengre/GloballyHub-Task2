@@ -120,6 +120,7 @@ server {
     executable: /bin/bash
   retries: 3
   delay: 10
+  
 ```
 
 ### Execution
