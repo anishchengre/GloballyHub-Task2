@@ -112,7 +112,7 @@ server {
 }
 ```
 ### SSL Setup
-
+```
 - name: Run Certbot
   raw: |
     certbot --nginx --non-interactive --agree-tos --redirect -m {{ certbot_email }} -d {{ certbot_domain }}
@@ -120,15 +120,15 @@ server {
     executable: /bin/bash
   retries: 3
   delay: 10
-
+```
 
 ### Execution
-
+```
 ansible-playbook ~/.ansible/playbooks/role_globallyhub.yml
-
+```
 
 ### Verification
-
+```
 Check Nginx status:
 
 systemctl status nginx
@@ -141,3 +141,4 @@ curl https://yourdomain.com/page2
 Verify SSL:
 
 sudo certbot certificates
+```
