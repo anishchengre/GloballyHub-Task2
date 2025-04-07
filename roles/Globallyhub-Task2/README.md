@@ -8,6 +8,7 @@ This playbook automates the deployment of a secure Nginx web server with:
 - System package updates
 
 ## File Structure
+```
 .ansible/
 ├── hosts
 ├── playbooks/
@@ -22,7 +23,7 @@ This playbook automates the deployment of a secure Nginx web server with:
   │ └── nginx_config.j2
   └── vars/
   └── main.yml
-
+```
 
 
 ## Prerequisites
